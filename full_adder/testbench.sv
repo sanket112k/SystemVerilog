@@ -1,4 +1,8 @@
 // topmodule
+
+`include "interface.sv"
+`include "test.sv"
+
 module testbench;
   intf intff();
   test tst(intff);
@@ -7,13 +11,14 @@ module testbench;
     .a(intff.a),
     .b(intff.b),
     .c(intff.c),
-    .sum(intff.sum)
+    .sum(intff.sum),
     .cout(intff.cout)
   );
   
   initial begin
-    $dumpfile("testbench.vcd")
+    $dumpfile("testbench.vcd");
     $dumpvars;
   end
   
+  //initial #100 $finish;
 endmodule
