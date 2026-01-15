@@ -8,12 +8,18 @@ class monitor;
   endfunction
   
   task main();
-    repeat (2) #1 begin
+    repeat (8) #1 begin
       transaction trans;
       trans = new();
+      
       trans.a = vif.a;
       trans.b = vif.b;
       trans.c = vif.c;
+      trans.sum = vif.sum;
+      trans.cout = vif.cout;
+      
+      mon2scb.put(trans);
+      
       trans.display("monitor class signals");
     end
   endtask
