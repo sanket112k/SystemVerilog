@@ -8,12 +8,13 @@ class driver;
   endfunction
   
   task main();
-    repeat (2) begin
+    repeat (8) begin
       transaction trans;
       gen2drv.get(trans);
       vif.a <= trans.a;
       vif.b <= trans.b;
       vif.c <= trans.c;
+      #10;
       trans.display("driver class signals");
     end
   endtask
