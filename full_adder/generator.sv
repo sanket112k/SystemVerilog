@@ -7,9 +7,9 @@ class generator;
   endfunction
   
   task main();
-    repeat (2) begin
+    repeat (8) begin
       trans = new();
-      trans.randamize();
+      trans.randomize();
       trans.display("generator class signals");
       gen2drv.put(trans);
     end
