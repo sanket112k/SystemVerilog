@@ -12,7 +12,6 @@ module full_adder(
   and a2(c2, b, c);
   and a3(c3, c, a);
   
-  or o1(cout, c1, c2. c3);
+  or o1(cout, c1, c2, c3);
   
-  end
 endmodule
