@@ -1,7 +1,7 @@
 class transaction;
-  rand bit a;
-  rand bit b;
-  rand bit c;
+  randc bit a;
+  randc bit b;
+  randc bit c;
   bit sum;
   bit cout;
   
