@@ -4,3 +4,5 @@ module tb_top;
   design_example dut(addr);
   testbench test(addr);
 endmodule
+
+// Output: Addr = 10
