@@ -1,7 +1,9 @@
 `timescale 1ns/1ns
 
 module delay_example;
+
   int a, b, c;
+  
   task blocking1;
     #2 a = 1;
     b = #5 1;
@@ -26,6 +28,12 @@ module delay_example;
     c <= #1 4;
   endtask
   
+  task nonblocking3;
+    #2 a <= 5;
+    #5 b <= 5;
+    #1 c <= 5;
+  endtask
+  
   initial begin
     $monitor("Time=%0t | a=%0d b=%0d c=%0d", $time, a, b, c);
     blocking1;
@@ -36,6 +44,8 @@ module delay_example;
     #10 $display("-------------blocking2-----------------");
     nonblocking2;
     #10 $display("-------------nonblocking2--------------");
+    nonblocking3;
+    #10 $display("-------------nonblocking3--------------");
     #10 $finish;
   end
 endmodule
@@ -59,3 +69,7 @@ OUTPUT:
 # Time=51 | a=4 b=3 c=4
 # Time=54 | a=4 b=4 c=4
 # -------------nonblocking2--------------
+# Time=61 | a=5 b=4 c=4
+# Time=66 | a=5 b=5 c=4
+# Time=67 | a=5 b=5 c=5
+# -------------nonblocking3--------------
