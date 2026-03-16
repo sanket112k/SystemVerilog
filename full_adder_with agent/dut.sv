@@ -1,18 +1,18 @@
 // design
 
 module full_adder(
-  input a, b, c,
+  input a, b, cin,
   output sum, cout
 );
   
-  wire c1, c2, c3;
+  wire w1, w2, w3;
   
-  xor x1(sum, a, b, c);
+  xor x1(sum, a, b, cin);
   
-  and a1(c1, a, b);
-  and a2(c2, b, c);
-  and a3(c3, c, a);
+  and a1(w1, a, b);
+  and a2(w2, b, cin);
+  and a3(w3, cin, a);
   
-  or o1(cout, c1, c2, c3);
+  or o1(cout, w1, w2, w3);
   
 endmodule
