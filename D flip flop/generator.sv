@@ -1,24 +1,22 @@
 class generator;
-  int num_transactions = 10;
-  
+
   mailbox #(transaction) gen2drv;
-  
-  function new(mailbox #(transaction) gen2drv);
+  int count;
+  event done;
+
+  function new(mailbox #(transaction) gen2drv, int count);
     this.gen2drv = gen2drv;
+    this.count   = count;
   endfunction
-  
+
   task run();
     transaction tr;
-    repeat (num_transactions) begin
+    repeat (count) begin
       tr = new();
-      
-      if (!tr.randomize() with {
-        reset dist {1'b1 := 80, 1'b0:= 20};
-      }) $fatal(1, "Randomization failed!");
-      
+      assert(tr.randomize());
       gen2drv.put(tr);
-      
-      #1;
     end
+    ->done;
   endtask
+
 endclass
