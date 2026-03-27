@@ -1,11 +1,12 @@
-interface intf(
-  input bit clk
-);
+interface dff_if(input logic clk);
+
   logic reset;
-  logic data;
+  logic d;
   logic q;
-  
-  // clocking block
-  // modport
-  
+
+  clocking cb @(posedge clk);
+    output d, reset;
+    input q;
+  endclocking
+
 endinterface
