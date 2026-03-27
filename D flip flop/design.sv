@@ -1,11 +1,15 @@
-module dff_async_reset(
-  input logic clk,
-  input logic reset,	//Active-low reset
-  input logic data,
+module dff (
+  input  logic clk,
+  input  logic reset,   // active high async reset
+  input  logic d,
   output logic q
 );
-  always @(posedge clk or negedge reset) begin
-    if(~reset) q <= 0;
-  else q <= data;
-end
+
+  always_ff @(posedge clk or posedge reset) begin
+    if (reset)
+      q <= 0;
+    else
+      q <= d;
+  end
+
 endmodule
