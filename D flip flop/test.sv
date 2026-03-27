@@ -1,10 +1,15 @@
 `include "environment.sv"
-program test(intf intff);
+
+class test;
+
   environment env;
-  
-  initial begin
-    env = new(intff);
-    env.test_run();
-  end
-  
-endprogram
+
+  function new(virtual dff_if vif);
+    env = new(vif);
+  endfunction
+
+  task run();
+    env.run();
+  endtask
+
+endclass
