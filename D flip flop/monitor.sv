@@ -1,22 +1,27 @@
 class monitor;
-  virtual intf vif;
+
+  virtual dff_if vif;
   mailbox #(transaction) mon2scb;
-  
-  function new(mailbox #(transaction) mon2scb);
+
+  function new(virtual dff_if vif,
+               mailbox #(transaction) mon2scb);
+    this.vif = vif;
+    this.mon2scb = mon2scb;
   endfunction
-  
+
   task run();
     transaction tr;
+
     forever begin
-      @(posedge vif.clk);
-      
+      @(vif.cb);
+
       tr = new();
-      tr.data = vif.data;
+      tr.d     = vif.d;
       tr.reset = vif.reset;
-      tr.q = vif.q;
-      
+      tr.q     = vif.q;
+
       mon2scb.put(tr);
-      tr.display("Monitor class signals");
     end
   endtask
+
 endclass
