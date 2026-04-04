@@ -1,4 +1,5 @@
-`import tb_pkg::*;
+//`include "tb_pkg.sv"
+import tb_pkg::*;
 
 interface count_if(input logic clk);
   logic reset;
@@ -8,4 +9,5 @@ interface count_if(input logic clk);
     default input #1step output #0;
     input count;
     output reset;
+  endclocking
 endinterface
