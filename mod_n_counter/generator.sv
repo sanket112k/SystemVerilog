@@ -4,15 +4,16 @@ class generator;
   int iterations;
   event done;
   
-  function new(mailbox #(transaction) gen2drv, iterations);
+  function new(mailbox #(transaction) gen2drv, int iterations);
     this.gen2drv = gen2drv;
     this.iterations = iterations;
   endfunction
   
   task run();
     transaction tr;
-    repeat(iteration) begin
-      tr.randonmize();
+    repeat(iterations) begin
+      tr = new();
+      tr.randomize();
       gen2drv.put(tr);
     end
     -> done;
