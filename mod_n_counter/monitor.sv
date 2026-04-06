@@ -10,6 +10,7 @@ class monitor;
   task run();
     transaction tr;
     
+    @(vif.cb);
     forever begin
       @(vif.cb);
       
