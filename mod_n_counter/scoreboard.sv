@@ -16,6 +16,7 @@ class scoreboard;
     
     forever begin
       mon2scb.get(tr);
+      
       if(tr.reset || expected_count == N-1)
         expected_count = 0;
       else
