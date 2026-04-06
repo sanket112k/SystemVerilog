@@ -9,7 +9,7 @@ class environment;
 
   function new(virtual count_if vif);
     agt = new(vif);
-    scb = new(agt.mon2scb, 20);
+    scb = new(agt.mon2scb, agt.gen.iterations);
   endfunction
 
   task run();
