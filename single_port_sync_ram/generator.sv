@@ -9,13 +9,23 @@ class generator;
   endfunction
   
   task run();
-    transaction tr;
+    transaction tr = new();
+    transaction tr_copy;
+    
     repeat (iterations) begin
-      tr = new();
-      assert(tr.randomize());
-      tr.display("GEN");
-      gen2drv.put(tr);
+      assert(tr.randomize() with {we == 1;});
+      tr_copy = new tr;
+      tr_copy.display("GEN");
+      gen2drv.put(tr_copy);
     end
+    
+    repeat (iterations) begin
+      assert(tr.randomize() with {we == 0;});
+      tr_copy = new tr;
+      tr_copy.display("GEN");
+      gen2drv.put(tr_copy);
+    end
+    
     ->done;
   endtask
 endclass
