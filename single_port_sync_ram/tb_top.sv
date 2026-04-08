@@ -5,7 +5,7 @@
 module tb_top;
   import tb_pkg::*;
   
-  logic clk;
+  logic clk = 0;
   always #5 clk = ~clk;
   
   ram_if vif(clk);
