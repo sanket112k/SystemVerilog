@@ -14,7 +14,7 @@ class agent;
     gen2drv = new();
     mon2scb = new();
     
-    gen = new(gen2drv, 20);
+    gen = new(gen2drv, 64);
     drv = new(vif, gen2drv);
     mon = new(vif, mon2scb);
   endfunction
