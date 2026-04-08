@@ -11,11 +11,11 @@ class monitor;
     transaction tr;
     
     forever begin
-      @(posedge vif.clk);
+      @(vif.cb);
       
       if (vif.cs) begin
         tr = new();
-        tr.addr = vif.data;
+        tr.addr = vif.addr;
         tr.cs = vif.cs;
         tr.we = vif.we;
         tr.oe = vif.oe;
