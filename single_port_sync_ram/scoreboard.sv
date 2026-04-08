@@ -21,17 +21,18 @@ class scoreboard;
       if(tr.we)
         model_mem[tr.addr] = tr.data;
       else begin
-        if (model_mem[tr.addr] !== tr.data) begin
-          $display("[FAIL] Addr=%0d Expected=%0h Got=%0h", tr.addr, model_mem[tr.addr], tr.rdata);
-          pass++;
+        if (model_mem[tr.addr] !== tr.rdata) begin
+          fail++;
+          $display("[SCB] {FAIL=%0d} addr=%0d Expected=%0h Got=%0h", fail, tr.addr, model_mem[tr.addr], tr.rdata);
         end
         else begin
-          $display("[PASS] Addr=%0d Data=%0h", tr.addr, tr.rdata);
-          fail++;
+          pass++;
+          $display("[SCB] {PASS=%0d} addr=%0d rdata=%0h", pass, tr.addr, tr.rdata);
         end
       end
       if ((pass + fail) == iterations)
         ->done;
+      $display("----------------------------------------------------");
     end
   endtask
   
