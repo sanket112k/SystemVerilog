@@ -11,9 +11,11 @@ class driver;
     transaction tr;
     
     forever begin
-      $display("[DRV] Waiting for transaction");
+      //$display("[DRV] Waiting for transaction");
       gen2drv.get(tr);
-      $display("[DRV] Got transaction");
+      //$display("[DRV] Got transaction");
+      
+      @(vif.cb);
       
       vif.cb.addr <= tr.addr;
       vif.cb.cs <= tr.cs;
@@ -23,9 +25,8 @@ class driver;
         vif.cb.data <= tr.data;
       else
         vif.cb.data <= 'bz;
-      $display("[DRV] Converted to signal level");
+      //$display("[DRV] Converted to signal level");
       
-      @(vif.cb);
       tr.display("DRV");
     end
   endtask
