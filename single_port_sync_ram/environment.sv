@@ -19,7 +19,7 @@ class environment;
       scb.run();
     join_none
     
-    wait fork;
+    //wait fork;
     
     @(scb.done);
     scb.report();
