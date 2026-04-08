@@ -1,7 +1,7 @@
 import tb_pkg::*;
 
 class transaction;
-  rand bit [ADDR_WIDTH-1 : 0] addr;
+  randc bit [ADDR_WIDTH-1 : 0] addr;
   rand bit cs;
   rand bit we;
   rand bit oe;
@@ -17,6 +17,6 @@ class transaction;
   }
   
   function void display(string name);
-    $display("[%s] addr=%0d cs=%0b we=%0b oe=%0b data=%0h rdata=%0h", name, addr, cs, we, oe, data, rdata);
+    $display("(%0t) [%s] addr=%0d cs=%0b we=%0b oe=%0b data=%0h rdata=%0h", $time, name, addr, cs, we, oe, data, rdata);
   endfunction
 endclass
