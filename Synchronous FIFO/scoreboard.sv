@@ -1,15 +1,12 @@
-//import tb_pkg::*;
-
 class scoreboard;
   
   transaction tr;
   mailbox #(transaction) mon2scb;
   int pass, fail;
   event done;
+    
+  bit [DATA_WIDTH-1 : 0] ref_queue [$];
   
-  bit [DATA_WIDTH-1 : 0] model_mem [DEPTH];
-  bit [ADDR_WIDTH : 0]   model_w_ptr;
-  bit [ADDR_WIDTH : 0]   model_r_ptr;
   bit [DATA_WIDTH-1 : 0] exp_data_out;
   bit exp_full;
   bit exp_empty;
@@ -24,25 +21,18 @@ class scoreboard;
       
       // Update the model
       if(!tr.resetn) begin
-        model_w_ptr = 0;
-        model_r_ptr = 0;
         exp_data_out = 0;
       end
       else begin
-        if (tr.w_en && !exp_full) begin
-          model_mem [model_w_ptr[ADDR_WIDTH-1 : 0]] = tr.data_in;
-          model_w_ptr++;
-        end
-        if (tr.r_en && !exp_empty) begin
-          exp_data_out = model_mem[model_r_ptr[ADDR_WIDTH-1 : 0]];
-          model_r_ptr++;
-        end
+        if (tr.w_en && !exp_full)
+          ref_queue.push_back(tr.data_in);
+        if (tr.r_en && !exp_empty)
+          exp_data_out = ref_queue.pop_front();
       end
       
-      // Compute flags from updated pointers
-      exp_empty = (model_w_ptr == model_r_ptr);
-      exp_full  = (model_w_ptr[ADDR_WIDTH]     != model_r_ptr[ADDR_WIDTH]) &&
-                  (model_w_ptr[ADDR_WIDTH-1:0] == model_r_ptr[ADDR_WIDTH-1:0]);
+      exp_full = (ref_queue.size() == DEPTH);
+      exp_empty = (ref_queue.size() == 0);
+      
       
       // Compare
         if(tr.data_out === exp_data_out &&
