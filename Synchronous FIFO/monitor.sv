@@ -10,18 +10,19 @@ class monitor;
   endfunction
   
   task run();
+    @(vif.mon_cb);
     forever begin
       tr = new();
       
-      @(vif.cb);
+      @(vif.mon_cb);
       
-      tr.resetn   = vif.resetn;
-      tr.w_en     = vif.w_en;
-      tr.r_en     = vif.r_en;
-      tr.data_in  = vif.data_in;
-      tr.data_out = vif.data_out;
-      tr.full     = vif.full;
-      tr.empty    = vif.empty;
+      tr.resetn   = vif.mon_cb.resetn;
+      tr.w_en     = vif.mon_cb.w_en;
+      tr.r_en     = vif.mon_cb.r_en;
+      tr.data_in  = vif.mon_cb.data_in;
+      tr.data_out = vif.mon_cb.data_out;
+      tr.full     = vif.mon_cb.full;
+      tr.empty    = vif.mon_cb.empty;
       
       mon2scb.put(tr);
       tr.display("MON");
