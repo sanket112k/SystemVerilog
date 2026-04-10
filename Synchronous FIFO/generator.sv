@@ -12,7 +12,9 @@ class generator;
   task run();
     repeat(2) begin			// reset
       tr = new();
-      assert(tr.randomize() with {resetn == 1'b0;});
+      assert(tr.randomize() with {
+        resetn == 1'b0;
+      });
       gen2drv.put(tr);
       tr.display("GEN");
     end
