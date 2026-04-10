@@ -21,7 +21,7 @@ module synchronous_fifo #(
       w_ptr <= 0;
     else if (w_en && !full) begin
       mem [w_ptr[ADDR_WIDTH-1 : 0]] <= data_in;
-      w_ptr++;
+      w_ptr <= w_ptr + 1;
     end
   end
   
@@ -32,7 +32,7 @@ module synchronous_fifo #(
     end
     else if (r_en && !empty) begin
       data_out <= mem[r_ptr[ADDR_WIDTH-1 : 0]];
-      r_ptr++;
+      r_ptr <= r_ptr + 1;
     end
   end
   
