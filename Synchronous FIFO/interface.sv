@@ -9,12 +9,19 @@ interface fifo_if(input logic clk);
   logic full;
   logic empty;
   
-  clocking cb @(posedge clk);
+  clocking drv_cb @(posedge clk);
     default input #1step output #0;
     output resetn, w_en, r_en, data_in;
     input full, empty, data_out;
   endclocking
   
-  modport drv (output resetn, w_en, r_en, data_in, input full, empty, data_out);
-  modport mon (input resetn, w_en, r_en, data_in, full, empty, data_out);
+  clocking mon_cb @(posedge clk);
+    default input #0;
+    input resetn, w_en, r_en, data_in;
+    input full, empty, data_out;
+  endclocking
+  
+  modport drv_mp (clocking drv_cb);
+  modport mon_mp (clocking mon_cb);
+  
 endinterface
