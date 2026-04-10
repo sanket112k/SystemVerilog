@@ -14,12 +14,12 @@ class driver;
       gen2drv.get(tr);
       tr.display("DRV");
       
-      @(vif.cb);
+      @(vif.drv_cb);
       
-      vif.resetn  = tr.resetn;
-      vif.w_en    = tr.w_en;
-      vif.r_en    = tr.r_en;
-      vif.data_in = tr.data_in;
+      vif.drv_cb.resetn  <= tr.resetn;
+      vif.drv_cb.w_en    <= tr.w_en;
+      vif.drv_cb.r_en    <= tr.r_en;
+      vif.drv_cb.data_in <= tr.data_in;
     end
   endtask
 endclass
