@@ -26,9 +26,9 @@ module read_ctrl #(
     end
   end:next_transition
   
-  always_ff @(posedge clk) begin:ptr_increment_logic
-    rbnext = rptr_bin + (ren & ~empty);		// increment
-    rgnext = (rbnext>>1) ^ rbnext;			// binary to gray convertion
+  always_comb begin:ptr_increment_logic
+    rbnext = rreset ? '0 : rptr_bin + (ren & ~empty);		// increment
+    rgnext = (rbnext>>1) ^ rbnext;			// binary to gray conversion
   end:ptr_increment_logic
   
   assign raddr = rptr_bin[ADDR_WIDTH-1 : 0];
