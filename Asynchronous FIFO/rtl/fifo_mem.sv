@@ -6,7 +6,7 @@ module fifo_mem #(
 )(
   input  logic                    wclk,
   input  logic                    wen,
-  input  logic [ADDR_WIDTH-1 : 0] waddr;
+  input  logic [ADDR_WIDTH-1 : 0] waddr,
   input  logic [DATA_WIDTH-1 : 0] wdata,
   
   input  logic                    rclk,
