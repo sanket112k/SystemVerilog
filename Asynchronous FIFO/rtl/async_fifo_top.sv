@@ -1,4 +1,8 @@
 // FIFO top module
+`include "fifo_sync.sv"
+`include "fifo_mem.sv"
+`include "write_ctrl.sv"
+`include "read_ctrl.sv"
 
 module async_fifo_top #(
   parameter DEPTH = 8,
@@ -31,6 +35,7 @@ module async_fifo_top #(
   ) f_mem(
     .wclk (wclk),
     .wen  (wen & ~full),
+    .wdata(wdata),
     .waddr(waddr),
     
     .rclk (rclk),
