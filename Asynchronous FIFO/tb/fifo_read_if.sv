@@ -1,4 +1,4 @@
-interface fifo_if(input logic rclk);
+interface fifo_read_if(input logic rclk);
   import tb_pkg::*;
   
   logic 				   rreset;
