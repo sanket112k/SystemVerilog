@@ -1,6 +1,6 @@
 class r_driver;
   
-  r_transaction wtr;
+  r_transaction rtr;
   virtual fifo_read_if rvif;
   mailbox #(r_transaction) rgen2drv;
   
