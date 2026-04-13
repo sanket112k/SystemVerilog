@@ -1,3 +1,5 @@
+import tb_pkg::*;
+
 class w_transaction;
   rand bit 					  wreset;
   rand bit 					  wen;
