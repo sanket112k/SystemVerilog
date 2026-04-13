@@ -27,7 +27,7 @@ module write_ctrl #(
   end:next_transition
   
   always_comb begin:ptr_increment_logic
-    wbnext = wreset ? '0 ? wptr_bin + (wen & ~full);		// increment
+    wbnext = wreset ? '0 : wptr_bin + (wen & ~full);		// increment
     wgnext = (wbnext>>1) ^ wbnext;		// binary to gray conversion
   end:ptr_increment_logic
   
