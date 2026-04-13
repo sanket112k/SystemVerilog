@@ -1,4 +1,4 @@
-interface fifo_if(input logic wclk);
+interface fifo_write_if(input logic wclk);
   import tb_pkg::*;
   
   logic 				   wreset;
