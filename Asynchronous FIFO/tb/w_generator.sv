@@ -29,5 +29,25 @@ class w_generator;
       wtr.display("WGEN");
     end
     
+    repeat(DEPTH) begin 	// Don't write
+      wtr = new();
+      assert(wtr.randomize() with {
+        wreset == 1'b0;
+        wen    == 1'b0;
+      });
+      wgen2drv.put(wtr);
+      wtr.display("WGEN");
+    end
+    
+    repeat(8) begin 	// Both write and read
+      wtr = new();
+      assert(wtr.randomize() with {
+        wreset == 1'b0;
+        wen    == 1'b1;
+      });
+      wgen2drv.put(wtr);
+      wtr.display("WGEN");
+    end
+    
   endtask
 endclass
