@@ -24,7 +24,7 @@ module tb_top;
     .wdata (wif.wdata),
     .full  (wif.full),
     
-    .rclk  (rif.rclk),
+    .rclk  (rclk),
     .rreset(rif.rreset),
     .ren   (rif.ren),
     .rdata (rif.rdata),
