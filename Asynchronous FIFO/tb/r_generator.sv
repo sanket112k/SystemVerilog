@@ -16,7 +16,7 @@ class r_generator;
         rreset == 1'b1;
       });
       rgen2drv.put(rtr);
-      rtr.display("WGEN");
+      rtr.display("RGEN");
     end
     
     repeat(DEPTH) begin 	// Don't read
