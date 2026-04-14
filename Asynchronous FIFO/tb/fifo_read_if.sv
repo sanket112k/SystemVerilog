@@ -21,7 +21,7 @@ interface fifo_read_if(input logic rclk);
   
   modport r_drv_mp (clocking r_drv_cb, import task wait_clock(int n));
   modport r_mon_mp (clocking r_mon_cb);
-  modport dut_mp   (input rreset, ren, output empty, rdata, rvalid);
+    modport dut_mp   (input rreset, ren, output rdata, empty, rvalid);
     
   task automatic wait_clock(int n);
     repeat(n) @(posedge rclk);
