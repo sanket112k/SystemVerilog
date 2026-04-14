@@ -20,7 +20,7 @@ interface fifo_write_if(input logic wclk);
   
   modport w_drv_mp (clocking w_drv_cb, import task wait_clocks(int n));
   modport w_mon_mp (clocking w_mon_cb);
-  modport dut_mp   (input wreset, wen, wdata, input full);
+  modport dut_mp   (input wreset, wen, wdata, output full);
   
   task automatic wait_clock(int n);
     repeat(n) @(posedge wclk);
