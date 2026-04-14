@@ -19,4 +19,12 @@ class r_agent;
     rdrv = new(rvif, rgen2drv);
     rmon = new(rvif, rmon2scb);
   endfunction
+  
+  task run();
+    fork
+      rgen.run();
+      rdrv.run();
+      rmon.run();
+    join_none
+  endtask
 endclass
