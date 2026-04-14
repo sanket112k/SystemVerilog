@@ -17,12 +17,8 @@ class environment;
   
   task run();
     fork
-      wagt.wgen.run();
-      ragt.rgen.run();
-      wagt.wdrv.run();
-      ragt.rdrv.run();
-      wagt.wmon.run();
-      ragt.rmon.run();
+      wagt.run();
+      ragt.run();
       scb.run();
     join_none
     
