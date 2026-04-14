@@ -7,6 +7,21 @@ class r_transaction;
   bit 					 empty;
   bit 					 rvalid;
   
+  rand int unsigned 	 delay_cycles;
+  longint				 rclk_time;		// $time stamp in read clock domain
+  
+  //deep copy
+  function r_transaction clone();
+    clone = new();
+    clone.rreset 		= this.rreset;
+    clone.ren 			= this.ren;
+    clone.rdata 		= this.rdata;
+    clone.empty 		= this.empty;
+    clone.rvalid 		= this.rvalid;
+    clone.delay_cycles 	= this.delay_cycles;
+    clone.rclk_time 	= this.rclk_time;
+  endfunction
+  
   function void display(string name);
     $display("[%0t] %0s:        rreset=%0b ren=%0b rdata=%0h empty=%0b rvalid=%0b", $time, name, rreset, ren, rdata, empty, rvalid);
   endfunction
