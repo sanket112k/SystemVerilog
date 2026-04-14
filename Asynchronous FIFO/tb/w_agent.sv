@@ -19,4 +19,12 @@ class w_agent;
     wdrv = new(wvif, wgen2drv);
     wmon = new(wvif, wmon2scb);
   endfunction
+  
+  task run();
+    fork
+      wgen.run();
+      wdrv.run();
+      wmon.run();
+    join_none
+  endtask
 endclass
