@@ -11,6 +11,8 @@ class w_agent;
   w_driver    wdrv;
   w_monitor   wmon;
   
+  bit wdone;
+  
   function new(virtual fifo_write_if wvif);
     wgen2drv = new();
     wmon2scb = new();
@@ -18,6 +20,8 @@ class w_agent;
     wgen = new(wgen2drv);
     wdrv = new(wvif, wgen2drv);
     wmon = new(wvif, wmon2scb);
+    
+    this.wdone = wgen.wdone;
   endfunction
   
   task run();
