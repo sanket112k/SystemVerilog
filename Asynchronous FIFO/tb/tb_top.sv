@@ -43,4 +43,9 @@ module tb_top;
     $dumpfile("testbench.vcd");
     $dumpvars;
   end
+  
+  initial begin
+    repeat (100) begin @(posedge wclk); end
+    $finish;
+  end
 endmodule
