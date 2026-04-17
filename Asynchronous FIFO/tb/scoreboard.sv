@@ -8,6 +8,7 @@ class scoreboard;
   mailbox #(w_transaction) wmon2scb;
   mailbox #(r_transaction) rmon2scb;
   int pass, fail;
+  bit wdone, rdone;
   event done;
     
   bit [DATA_WIDTH-1 : 0] ref_queue [$];
@@ -16,9 +17,11 @@ class scoreboard;
   bit exp_full;
   bit exp_empty;
   
-  function new(mailbox #(w_transaction) wmon2scb, mailbox #(r_transaction) rmon2scb);
+  function new(mailbox #(w_transaction) wmon2scb, mailbox #(r_transaction) rmon2scb, bit wdone, bit rdone);
     this. wmon2scb = wmon2scb;
     this. rmon2scb = rmon2scb;
+    this. wdone = wdone;
+    this. rdone = rdone;
   endfunction
   
   task run();
@@ -38,7 +41,9 @@ class scoreboard;
           end
           else begin
             exp_rdata = ref_queue.pop_front();
-            if (rtr.rdata === exp_rdata) begin
+            if (rtr.rdata  === exp_rdata &&
+                wtr.full   === exp_full &&
+         		rtr.empty  === exp_empty) begin
               $display("[%0t] SCB: {PASS} wreset=%0b wen=%0b wdata=%0h full=%0b rreset=%0b ren=%0b rdata=%0h empty=%0b rvalid=%0b", $time, wtr.wreset, wtr.wen, wtr.wdata, wtr.full, rtr.rreset, rtr.ren, rtr.rdata, rtr.empty, rtr.rvalid);
               pass++;
             end
@@ -47,8 +52,8 @@ class scoreboard;
               fail++;
             end
           end
-          $display("--------------------------------------------");
-          if(pass + fail == (2*DEPTH + 10))
+          $display("-----------------------Pass=%0d Fail=%0d wdone=%0b rdone=%0b---------------------", pass, fail, wdone, rdone);
+          if(wdone && rdone)
             -> done;
         end
       end
