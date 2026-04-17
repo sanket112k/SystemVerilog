@@ -11,6 +11,8 @@ class r_agent;
   r_driver    rdrv;
   r_monitor   rmon;
   
+  bit rdone;
+  
   function new(virtual fifo_read_if rvif);
     rgen2drv = new();
     rmon2scb = new();
@@ -18,6 +20,8 @@ class r_agent;
     rgen = new(rgen2drv);
     rdrv = new(rvif, rgen2drv);
     rmon = new(rvif, rmon2scb);
+    
+    this.rdone = rgen.rdone;
   endfunction
   
   task run();
