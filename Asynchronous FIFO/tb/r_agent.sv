@@ -6,22 +6,21 @@ class r_agent;
   
   mailbox #(r_transaction) rgen2drv;
   mailbox #(r_transaction) rmon2scb;
+  mailbox rcount_mb;
   
   r_generator rgen;
   r_driver    rdrv;
   r_monitor   rmon;
   
-  bit rdone;
-  
   function new(virtual fifo_read_if rvif);
     rgen2drv = new();
     rmon2scb = new();
+    rcount_mb = new();
     
-    rgen = new(rgen2drv);
+    rgen = new(rgen2drv, rcount_mb);
     rdrv = new(rvif, rgen2drv);
     rmon = new(rvif, rmon2scb);
     
-    this.rdone = rgen.rdone;
   endfunction
   
   task run();
