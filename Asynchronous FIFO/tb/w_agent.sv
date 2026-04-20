@@ -6,22 +6,24 @@ class w_agent;
   
   mailbox #(w_transaction) wgen2drv;
   mailbox #(w_transaction) wmon2scb;
+  mailbox wcount_mb;
   
   w_generator wgen;
   w_driver    wdrv;
   w_monitor   wmon;
   
-  bit wdone;
+  //bit wdone;
   
   function new(virtual fifo_write_if wvif);
     wgen2drv = new();
     wmon2scb = new();
+    wcount_mb = new();
     
-    wgen = new(wgen2drv);
+    wgen = new(wgen2drv, wcount_mb);
     wdrv = new(wvif, wgen2drv);
     wmon = new(wvif, wmon2scb);
     
-    this.wdone = wgen.wdone;
+    //this.wdone = wgen.wdone;
   endfunction
   
   task run();
