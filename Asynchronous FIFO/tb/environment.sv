@@ -12,7 +12,10 @@ class environment;
   function new(virtual fifo_write_if wvif, virtual fifo_read_if rvif);
     wagt = new(wvif);
     ragt = new(rvif);
-    scb = new(wagt.wmon2scb, ragt.rmon2scb, wagt.wgen.wdone, ragt.rgen.rdone);
+    scb = new(wagt.wmon2scb,
+              ragt.rmon2scb, 
+              wagt.wcount_mb, 
+              ragt.rcount_mb);
   endfunction
   
   task run();
