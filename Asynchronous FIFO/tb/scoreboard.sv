@@ -7,8 +7,10 @@ class scoreboard;
   r_transaction rtr;
   mailbox #(w_transaction) wmon2scb;
   mailbox #(r_transaction) rmon2scb;
+  mailbox wcount_mb;
+  mailbox rcount_mb;
   int pass, fail;
-  bit wdone, rdone;
+  int wcount, rcount;
   event done;
     
   bit [DATA_WIDTH-1 : 0] ref_queue [$];
@@ -17,43 +19,58 @@ class scoreboard;
   bit exp_full;
   bit exp_empty;
   
-  function new(mailbox #(w_transaction) wmon2scb, mailbox #(r_transaction) rmon2scb, bit wdone, bit rdone);
+  function new(mailbox #(w_transaction) wmon2scb, 
+               mailbox #(r_transaction) rmon2scb, 
+               mailbox wcount_mb, 
+               mailbox rcount_mb);
     this. wmon2scb = wmon2scb;
     this. rmon2scb = rmon2scb;
-    this. wdone = wdone;
-    this. rdone = rdone;
+    this. wcount_mb = wcount_mb;
+    this. rcount_mb = rcount_mb;
   endfunction
   
   task run();
     fork
+      
       forever begin		// Thread 1: collect all writes into reference queue
         wmon2scb.get(wtr);
-        if(!wtr.wreset && wtr.wen && !wtr.full)
+        if(!wtr.wreset && wtr.wen && !wtr.full) begin
           ref_queue.push_back(wtr.wdata);
+          if (wtr.full   === exp_full) begin
+            $display("[%0t]  SCB: {PASS} wreset=%0b wen=%0b wdata=%0h full=%0b", $time, wtr.wreset, wtr.wen, wtr.wdata, wtr.full);
+            pass++;
+          end
+          else begin
+            $display("[%0t]  SCB: {PASS} wreset=%0b wen=%0b wdata=%0h full=%0b | exp_full=%0b", $time, wtr.wreset, wtr.wen, wtr.wdata, wtr.full, exp_full);
+            fail++;
+          end
+          $display("----------------------------------------------");
+        end
       end
       
       forever begin		// Thread 2: check reads against reference queue
         rmon2scb.get(rtr);
         if(!rtr.rreset && rtr.rvalid) begin
           if(ref_queue.size() == 0) begin
-            $display("[SCB] FAIL: rvalid seen but ref_queue is empty");
+            $display("[%0t]  SCB: {FAIL} ren seen but ref_queue is empty", $time);
             fail++;
           end
           else begin
             exp_rdata = ref_queue.pop_front();
             if (rtr.rdata  === exp_rdata &&
-                wtr.full   === exp_full &&
          		rtr.empty  === exp_empty) begin
-              $display("[%0t] SCB: {PASS} wreset=%0b wen=%0b wdata=%0h full=%0b rreset=%0b ren=%0b rdata=%0h empty=%0b rvalid=%0b", $time, wtr.wreset, wtr.wen, wtr.wdata, wtr.full, rtr.rreset, rtr.ren, rtr.rdata, rtr.empty, rtr.rvalid);
+              $display("[%0t]  SCB: {PASS} rreset=%0b ren=%0b rdata=%0h empty=%0b rvalid=%0b", $time, rtr.rreset, rtr.ren, rtr.rdata, rtr.empty, rtr.rvalid);
               pass++;
             end
             else begin
-              $display("[%0t] SCB: {FAIL} wreset=%0b wen=%0b wdata=%0h full=%0b rreset=%0b ren=%0b rdata=%0h empty=%0b rvalid=%0b | exp_data_out=%0h exp_full=%0b exp_empty=%0b", $time, wtr.wreset, wtr.wen, wtr.wdata, wtr.full, rtr.rreset, rtr.ren, rtr.rdata, rtr.empty, rtr.rvalid, exp_rdata, exp_full, exp_empty);
+              $display("[%0t]  SCB: {FAIL} rreset=%0b ren=%0b rdata=%0h empty=%0b rvalid=%0b | exp_data_out=%0h exp_empty=%0b", $time, rtr.rreset, rtr.ren, rtr.rdata, rtr.empty, rtr.rvalid, exp_rdata, exp_empty);
               fail++;
             end
           end
-          $display("-----------------------Pass=%0d Fail=%0d wdone=%0b rdone=%0b---------------------", pass, fail, wdone, rdone);
-          if(wdone && rdone)
+          wcount_mb.try_get(wcount);
+          rcount_mb.try_get(rcount);
+          $display("-----------------------Pass=%0d Fail=%0d wcount=%0d rcount=%0d---------------------", pass, fail, wcount, rcount);
+          if(/*(pass + fail == wcount) &&*/ (pass + fail == rcount))
             -> done;
         end
       end
