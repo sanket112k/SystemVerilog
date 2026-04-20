@@ -14,6 +14,7 @@ module read_ctrl #(
   logic [ADDR_WIDTH : 0] rptr_bin;	// binary
   logic [ADDR_WIDTH : 0] rgnext;	// gray next
   logic [ADDR_WIDTH : 0] rbnext;	// binary next
+  logic empty_next;
   
   always_ff @(posedge rclk) begin:next_transition
     if (rreset) begin
@@ -40,10 +41,12 @@ module read_ctrl #(
       empty <= (rgnext == wptr_sync);
   end:empty_flag
   
+  assign empty_next = (rgnext == wptr_sync);
+  
   always_ff @(posedge rclk) begin:valid_generation
     if (rreset)
       rvalid <=0;
     else
-      rvalid <= ren & ~empty;
+      rvalid <= ren & ~empty_next;
   end:valid_generation
 endmodule
