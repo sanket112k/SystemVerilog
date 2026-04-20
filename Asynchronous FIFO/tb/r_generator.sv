@@ -4,18 +4,20 @@ class r_generator;
   
   r_transaction rtr;
   mailbox #(r_transaction) rgen2drv;
-  bit rdone;
+  mailbox rcount_mb;
+  int rcount;
   
-  function new(mailbox #(r_transaction) rgen2drv);
+  function new(mailbox #(r_transaction) rgen2drv, mailbox rcount_mb);
     this.rgen2drv = rgen2drv;
+    this.rcount_mb = rcount_mb;
   endfunction
   
+  ///*
   task run();
     repeat(2) begin			// reset
       rtr = new();
       assert(rtr.randomize() with {
         rreset == 1'b1;
-        rdone  == 1'b0;
       });
       rgen2drv.put(rtr.clone());
       rtr.display("RGEN");
@@ -28,6 +30,7 @@ class r_generator;
         ren    == 1'b0;
       });
       rgen2drv.put(rtr.clone());
+      rcount++;
       rtr.display("RGEN");
     end
     
@@ -38,6 +41,7 @@ class r_generator;
         ren    == 1'b1;
       });
       rgen2drv.put(rtr.clone());
+      rcount++;
       rtr.display("RGEN");
     end
     
@@ -48,19 +52,38 @@ class r_generator;
         ren    == 1'b1;
       });
       rgen2drv.put(rtr.clone());
+      rcount++;
       rtr.display("RGEN");
     end
-    
-    begin 		// Both write and read
+       
+    rcount_mb.put(rcount);
+    $display("[%0t] RGEN:        rcount=%0d", $time, rcount);
+  endtask
+  //*/
+  
+  /*
+  task run();
+    repeat(2) begin			// reset
       rtr = new();
       assert(rtr.randomize() with {
-        rreset == 1'b0;
-        ren    == 1'b1;
+        rreset == 1'b1;
       });
       rgen2drv.put(rtr.clone());
       rtr.display("RGEN");
     end
     
-    rdone = 1'b1;
+    repeat(2*DEPTH) begin 	// randomized read and write
+      rtr = new();
+      assert(rtr.randomize() with {
+        rreset == 1'b0;
+      });
+      rgen2drv.put(rtr.clone());
+      rcount++;
+      rtr.display("RGEN");
+    end
+       
+    rcount_mb.put(rcount);
+    $display("[%0t] RGEN:        rcount=%0d", $time, rcount);
   endtask
+  */
 endclass
