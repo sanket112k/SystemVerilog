@@ -13,16 +13,17 @@ interface fifo_write_if(input logic wclk);
   endclocking
   
   clocking w_mon_cb @(posedge wclk);
-    default input #0;
+    default input #1step;
     input wreset, wen, wdata;
     input full;
   endclocking
   
-  modport w_drv_mp (clocking w_drv_cb, import task wait_clocks(int n));
-  modport w_mon_mp (clocking w_mon_cb);
-  modport dut_mp   (input wreset, wen, wdata, output full);
-  
+  modport w_drv_mp (clocking w_drv_cb, input wclk/*, import task wait_clocks(int n)*/);
+  modport w_mon_mp (clocking w_mon_cb, input wclk);
+  //modport dut_mp   (input wreset, wen, wdata, output full);
+  /*
   task automatic wait_clock(int n);
     repeat(n) @(posedge wclk);
   endtask
+  */
 endinterface
