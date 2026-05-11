@@ -7,8 +7,14 @@ class r_transaction;
   bit 					 empty;
   bit 					 rvalid;
   
-  rand int unsigned 	 delay_cycles;
-  longint				 rclk_time;		// $time stamp in read clock domain
+  //rand int unsigned 	 delay_cycles;
+  //longint				 rclk_time;		// $time stamp in read clock domain
+  
+  /*
+  constraint reasonable_delay_c {
+    delay_cycles dist {0 := 50, [1:3] := 30, [4:8] := 20};
+  }
+  */
   
   //deep copy
   function r_transaction clone();
@@ -18,8 +24,8 @@ class r_transaction;
     clone.rdata 		= this.rdata;
     clone.empty 		= this.empty;
     clone.rvalid 		= this.rvalid;
-    clone.delay_cycles 	= this.delay_cycles;
-    clone.rclk_time 	= this.rclk_time;
+    //clone.delay_cycles 	= this.delay_cycles;
+    //clone.rclk_time 	= this.rclk_time;
   endfunction
   
   function void display(string name);
