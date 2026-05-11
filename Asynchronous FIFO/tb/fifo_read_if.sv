@@ -14,17 +14,17 @@ interface fifo_read_if(input logic rclk);
   endclocking
   
   clocking r_mon_cb @(posedge rclk);
-    default input #0;
+    default input #1step;
     input rreset, ren;
     input empty, rdata, rvalid;
   endclocking
   
-  modport r_drv_mp (clocking r_drv_cb, import task wait_clock(int n));
-  modport r_mon_mp (clocking r_mon_cb);
-    modport dut_mp   (input rreset, ren, output rdata, empty, rvalid);
-    
+  modport r_drv_mp (clocking r_drv_cb, input rclk/*, import task wait_clock(int n)*/);
+  modport r_mon_mp (clocking r_mon_cb, input rclk);
+  //modport dut_mp   (input rreset, ren, output rdata, empty, rvalid);
+  /*
   task automatic wait_clock(int n);
     repeat(n) @(posedge rclk);
   endtask
-    
+  */
 endinterface
