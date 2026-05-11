@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 `include "tb_pkg.sv"
 `include "fifo_write_if.sv"
 `include "fifo_read_if.sv"
@@ -18,13 +20,13 @@ module tb_top;
     .DEPTH		(DEPTH),
     .DATA_WIDTH	(DATA_WIDTH)
   ) dut(
-    .wclk  (wclk),
+    .wclk  (wif.wclk),
     .wreset(wif.wreset),
     .wen   (wif.wen),
     .wdata (wif.wdata),
     .full  (wif.full),
     
-    .rclk  (rclk),
+    .rclk  (rif.rclk),
     .rreset(rif.rreset),
     .ren   (rif.ren),
     .rdata (rif.rdata),
