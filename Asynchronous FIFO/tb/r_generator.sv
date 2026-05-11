@@ -5,15 +5,16 @@ class r_generator;
   r_transaction rtr;
   mailbox #(r_transaction) rgen2drv;
   mailbox rcount_mb;
-  int rcount;
+  event gen_done;
   
-  function new(mailbox #(r_transaction) rgen2drv, mailbox rcount_mb);
+  function new(mailbox #(r_transaction) rgen2drv, ref event done);
     this.rgen2drv = rgen2drv;
-    this.rcount_mb = rcount_mb;
+    this.gen_done = done;
   endfunction
   
-  ///*
+  
   task run();
+    
     repeat(2) begin			// reset
       rtr = new();
       assert(rtr.randomize() with {
@@ -23,25 +24,25 @@ class r_generator;
       rtr.display("RGEN");
     end
     
-    repeat(10) begin 	// Don't read
+    repeat(DEPTH) begin 		// Don't read
       rtr = new();
       assert(rtr.randomize() with {
         rreset == 1'b0;
         ren    == 1'b0;
       });
       rgen2drv.put(rtr.clone());
-      rcount++;
+      //rcount++;
       rtr.display("RGEN");
     end
     
-    repeat(10) begin 	// read
+    repeat(DEPTH + 4) begin 		// read
       rtr = new();
       assert(rtr.randomize() with {
         rreset == 1'b0;
         ren    == 1'b1;
       });
       rgen2drv.put(rtr.clone());
-      rcount++;
+      //rcount++;
       rtr.display("RGEN");
     end
     
@@ -52,14 +53,25 @@ class r_generator;
         ren    == 1'b1;
       });
       rgen2drv.put(rtr.clone());
-      rcount++;
+      //rcount++;
+      rtr.display("RGEN");
+    end
+    
+    begin 					// Stop read
+      rtr = new();
+      assert(rtr.randomize() with {
+        rreset == 1'b0;
+        ren    == 1'b0;
+      });
+      rgen2drv.put(rtr.clone());
+      //rcount++;
       rtr.display("RGEN");
     end
        
-    rcount_mb.put(rcount);
-    $display("[%0t] RGEN:        rcount=%0d", $time, rcount);
+    -> gen_done;
+    //$display("[%0t] RGEN:        rcount=%0d", $time, rcount);
   endtask
-  //*/
+  
   
   /*
   task run();
@@ -72,18 +84,29 @@ class r_generator;
       rtr.display("RGEN");
     end
     
-    repeat(2*DEPTH) begin 	// randomized read and write
+    repeat(10) begin 	// randomized read and write
       rtr = new();
       assert(rtr.randomize() with {
         rreset == 1'b0;
       });
       rgen2drv.put(rtr.clone());
-      rcount++;
+      //rcount++;
+      rtr.display("RGEN");
+    end
+    
+    begin 	// Done
+      rtr = new();
+      assert(rtr.randomize() with {
+        rreset == 1'b0;
+        ren    == 1'b0;
+      });
+      rgen2drv.put(rtr.clone());
+      //rcount++;
       rtr.display("RGEN");
     end
        
-    rcount_mb.put(rcount);
-    $display("[%0t] RGEN:        rcount=%0d", $time, rcount);
+    -> gen_done;
+    //$display("[%0t] RGEN:        rcount=%0d", $time, rcount);
   endtask
   */
 endclass
