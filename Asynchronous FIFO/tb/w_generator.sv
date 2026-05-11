@@ -5,15 +5,16 @@ class w_generator;
   w_transaction wtr;
   mailbox #(w_transaction) wgen2drv;
   mailbox wcount_mb;
-  int wcount;
+  event gen_done;
   
-  function new(mailbox #(w_transaction) wgen2drv, mailbox wcount_mb);
+  function new(mailbox #(w_transaction) wgen2drv, ref event done);
     this.wgen2drv = wgen2drv;
-    this.wcount_mb = wcount_mb;
+    this.gen_done = done;
   endfunction
   
-  ///*
+  
   task run();
+    
     repeat(2) begin			// reset
       wtr = new();
       assert(wtr.randomize() with {
@@ -23,53 +24,54 @@ class w_generator;
       wtr.display("WGEN");
     end
     
-    repeat(10) begin 	// write
+    repeat(DEPTH) begin 	// write
       wtr = new();
       assert(wtr.randomize() with {
         wreset == 1'b0;
         wen    == 1'b1;
       });
       wgen2drv.put(wtr.clone());
-      wcount++;
+      //wcount++;
       wtr.display("WGEN");
     end
     
-    repeat(10) begin 	// Don't write
+    repeat(DEPTH) begin 	// Don't write
       wtr = new();
       assert(wtr.randomize() with {
         wreset == 1'b0;
         wen    == 1'b0;
       });
       wgen2drv.put(wtr.clone());
-      wcount++;
+      //wcount++;
       wtr.display("WGEN");
     end
     
-    repeat(8) begin 	// Both write and read
+    repeat(8) begin 		// Both write and read
       wtr = new();
       assert(wtr.randomize() with {
         wreset == 1'b0;
         wen    == 1'b1;
       });
       wgen2drv.put(wtr.clone());
-      wcount++;
+      //wcount++;
       wtr.display("WGEN");
     end
     
-    begin 	// Stop write
+    begin 					// Stop write
       wtr = new();
       assert(wtr.randomize() with {
         wreset == 1'b0;
         wen    == 1'b0;
+        wdata  == 1'b0;
       });
       wgen2drv.put(wtr.clone());
       wtr.display("WGEN");
     end
     
-    wcount_mb.put(wcount);
-    $display("[%0t] WGEN:        wcount=%0d", $time, wcount);
+    -> gen_done;
+    //$display("[%0t] WGEN:        wcount=%0d", $time, wcount);
   endtask
-  //*/
+  
   
   
   /*
@@ -83,18 +85,30 @@ class w_generator;
       wtr.display("WGEN");
     end
     
-    repeat(2*DEPTH) begin	// randomized read and write
+    repeat(10) begin	// randomized read and write
       wtr = new();
       assert(wtr.randomize() with {
         wreset == 1'b0;
       });
       wgen2drv.put(wtr.clone());
-      wcount++;
+      //wcount++;
+      wtr.display("WGEN");
+    end
+    
+     begin				// Done
+      wtr = new();
+      assert(wtr.randomize() with {
+        wreset == 1'b0;
+        wen    == 1'b0;
+        wdata  == 1'b0;
+      });
+      wgen2drv.put(wtr.clone());
+      //wcount++;
       wtr.display("WGEN");
     end
        
-    wcount_mb.put(wcount);
-    $display("[%0t] WGEN:        wcount=%0d", $time, wcount);
+    -> gen_done;
+    //$display("[%0t] WGEN:        wcount=%0d", $time, wcount);
   endtask
   */
 endclass
