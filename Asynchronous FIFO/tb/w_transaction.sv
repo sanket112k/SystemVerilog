@@ -6,8 +6,8 @@ class w_transaction;
   rand bit [DATA_WIDTH-1 : 0] wdata;
   bit 						  full;
   
-  rand int unsigned 		  delay_cycles;
-  longint 					  wclk_time;	// $time stamp in write clock domain
+  //rand int unsigned 		  delay_cycles;
+  //longint 					  wclk_time;	// $time stamp in write clock domain
   
   // Deep copy
   function w_transaction clone();
@@ -16,8 +16,8 @@ class w_transaction;
     clone.wen 			= this.wen;
     clone.wdata 		= this.wdata;
     clone.full 			= this.full;
-    clone.delay_cycles 	= this.delay_cycles;
-    clone.wclk_time		= this.wclk_time;
+    //clone.delay_cycles 	= this.delay_cycles;
+    //clone.wclk_time		= this.wclk_time;
   endfunction
   
   function void display(string name);
