@@ -51,8 +51,8 @@ module i2c_master_bit_ctrl(
   output logic        busy,		// i2c bus busy
   output logic        arb_lost,	// i2c bus arbitration lost
   
-  input  logic        din,		
-  output logic        dout,		
+  input  logic        din,		// serial write
+  output logic        dout,		// serial read
   
   input  logic        scl_i,	
   output logic        scl_o,	
@@ -66,6 +66,7 @@ module i2c_master_bit_ctrl(
   logic [2:0]  fSCL, fSDA;	// SCL and SDA filter inputs
   logic        sSCL, sSDA;	// filtered and synchronized SCL and SDA inputs
   logic        dSCL, dSDA;	// delayed versions of sSCL and sSDA
+  
   logic        dscl_oen;	// delayed scl_oen
   logic        sda_chk;		// check SDA output (multi-master arbitration)
   logic        clk_en		// clk generation signals
@@ -73,7 +74,7 @@ module i2c_master_bit_ctrl(
   logic [15:0] cnt;			// clk divider counter (synthesis)
   logic [13:0] filter_cnt;	// clk divider for filter
   
-  enum logic [4:0] {
+  enum bit [4:0] {
     IDLE,
     START_A, START_B, START_C, START_D, START_E,
     STOP_A,  STOP_B,  STOP_C,  STOP_D,
@@ -125,8 +126,8 @@ module i2c_master_bit_ctrl(
       cSCL <= 2'b00;
       cSDA <= 2'b00;
     end else begin
-      cSCL <= {cSCL[0], scl_i};
-      cSDA <= {cSDA[0], sda_i};
+      cSCL <= {cSCL[0], scl_i};		// {past_scl, present_scl} every clk
+      cSDA <= {cSDA[0], sda_i};		// {past_sda, present_sda}
     end
   end
   
@@ -146,7 +147,7 @@ module i2c_master_bit_ctrl(
       fSDA <= 3'b111;
     end
     else if (filter_cnt == 0) begin
-      fSCL <= {fSCL[1:0], cSCL[1]};
+      fSCL <= {fSCL[1:0], cSCL[1]};		// {past_scl[1:0], past_scl} every (filter_cnt == 0)
       fSDA <= {fSDA[1:0], cSDA[1]};
     end
   end
@@ -160,10 +161,10 @@ module i2c_master_bit_ctrl(
       dSCL <= 1'b1;
       dSDA <= 1'b1;
     end else begin
-      sSCL <= &fSCL[2:1] | &fSCL[1:0] | (fSCL[2] & fSCL[0]);
+      sSCL <= &fSCL[2:1] | &fSCL[1:0] | (fSCL[2] & fSCL[0]);	// any 2 bit are 1's
       sSDA <= &fSDA[2:1] | &fSDA[1:0] | (fSDA[2] & fSDA[0]);
       
-      dSCL <= sSCL;
+      dSCL <= sSCL;		// delayed sSCL
       dSDA <= sSDA;
     end
   end
@@ -185,7 +186,7 @@ module i2c_master_bit_ctrl(
   // generate i2c bus busy signal
   always_ff @(posedge clk or negedge resetn) begin
     if (!resetn) busy <= 1'b0;
-    else		 busy <= (sta_condition | busy) & ~stop_condition;
+    else		 busy <= (start_condition | busy) & ~stop_condition;
   end
   
   // generate arbitration lost signal
@@ -197,7 +198,7 @@ module i2c_master_bit_ctrl(
     if (!resetn)
       cmd_stop <= 1'b0;
     else if (clk_en)
-      cmd_stop <= cmd == `I2C_CMD_STOP;
+      cmd_stop <= (cmd == `I2C_CMD_STOP);
   end
   
   always_ff @(posedge clk or negedge resetn) begin
@@ -220,44 +221,144 @@ module i2c_master_bit_ctrl(
       sda_chk <= 1'b0;
     end
     else begin
-      cmd_ask <= 1'b0; // default no command acknowledge + assert cmd_ack only 1clk cycle
+      cmd_ack <= 1'b0; // default no command acknowledge + assert cmd_ack only 1clk cycle
       if (clk_en)
         case (state)
           IDLE: begin
+            case (cmd)
+              `I2C_CMD_START: state <= START_A;
+              `I2C_CMD_STOP:  state <= STOP_A;
+              `I2C_CMD_WRITE: state <= WRITE_A;
+              `I2C_CMD_READ:  state <= READ_A;
+              default:        state <= IDLE;
+            endcase
+            scl_oen <= scl_oen;		// keep SCL in same state
+            sda_oen <= sda_oen;		// keep SDA in same state
+            sda_chk <= 1'b0;		// don't check SDA output
           end
+          
+          
+          // start:		SCL	~~~~~~~~~~\____
+          //			SDA	~~~~~~~~\______
+          //		 	x | A | B | C | D | i
           START_A: begin
+            state   <= START_B;
+            scl_oen <= scl_oen;		// keep same
+            sda_oen <= 1'b1;		// set SDA high
+            sda_chk <= 1'b0;		// don't check
           end
           START_B: begin
+            state   <= START_C;
+            scl_oen <= 1'b1;		// set SCL high
+            sda_oen <= 1'b1;		// keep SDA high
+            sda_chk <= 1'b0;		// don't ckeck
           end
           START_C: begin
+            state   <= START_D;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b0;
+            sda_chk <= 1'b0;
           end
           START_D: begin
+            state   <= START_E;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b0;
+            sda_chk <= 1'b0;
           end
           START_E: begin
+            state   <= IDLE;
+            cmd_ack <= 1'b1;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b0;
+            sda_chk <= 1'b0;
           end
+          
+          // stop:		SCL	______/~~~~~~~~
+          //			SDA	==\______/~~~~~
+          //		 	x | A | B | C | D | i
           STOP_A: begin
+            state   <= STOP_B;
+            scl_oen <= 1'b0;
+            sda_oen <= 1'b0;
+            sda_chk <= 1'b0;
           end
           STOP_B: begin
+            state   <= STOP_C;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b0;
+            sda_chk <= 1'b0;
           end
           STOP_C: begin
+            state   <= STOP_D;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b0;
+            sda_chk <= 1'b0;
           end
           STOP_D: begin
+            state   <= IDLE;
+            cmd_ack <= 1'b1;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b1;
+            sda_chk <= 1'b0;
           end
+          
+          
+          // read:		SCL	____/~~~~\____
+          //			SDA	XXXX=====XXXX
+          //		 	x | A | B | C | D | i
           READ_A: begin
+            state   <= READ_B;
+            scl_oen <= 1'b0;
+            sda_oen <= 1'b1;
+            sda_chk <= 1'b0;
           end
           READ_B: begin
+            state   <= READ_C;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b1;
+            sda_chk <= 1'b0;
           end
           READ_C: begin
+            state   <= READ_D;
+            scl_oen <= 1'b1;
+            sda_oen <= 1'b1;
+            sda_chk <= 1'b0;
           end
           READ_D: begin
+            state   <= IDLE;
+            cmd_ack <= 1'b1;
+            scl_oen <= 1'b0;
+            sda_oen <= 1'b1;
+            sda_chk <= 1'b0;
           end
+          
+          // write:		SCL	____/~~~~\____
+          //			SDA	==X=========X=
+          //		 	x | A | B | C | D | i
           WRITE_A: begin
+            state   <= WRITE_B;
+            scl_oen <= 1'b0;
+            sda_oen <= din;
+            sda_chk <= 1'b0;
           end
           WRITE_B: begin
+            state   <= WRITE_C;
+            scl_oen <= 1'b1;
+            sda_oen <= din;
+            sda_chk <= 1'b0;
           end
           WRITE_C: begin
+            state   <= WRITE_D;
+            scl_oen <= 1'b1;
+            sda_oen <= din;
+            sda_chk <= 1'b1;
           end
           WRITE_D: begin
+            state   <= IDLE;
+            cmd_ack <= 1'b1;
+            scl_oen <= 1'b0;
+            sda_oen <= din;
+            sda_chk <= 1'b0;
           end
         endcase
     end
