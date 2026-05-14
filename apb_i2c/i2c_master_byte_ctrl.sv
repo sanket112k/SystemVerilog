@@ -1,25 +1,37 @@
+
 `timescale 1ns/10ps
 
 module i2c_master_byte_ctrl(
   input  logic        clk,
   input  logic        resetn,
-  input  logic        ena,
-  input  logic [15:0] clk_cnt,		// 4x SCL
   
-  // control inputs
+  // ctrl register
+  input  logic        ena,
+  
+  // clk prescale register
+  input  logic [15:0] clk_cnt,	// 4x SCL
+  
+  // transmit register
+  input  logic [7:0]  din,		// parallel byte in
+  
+  // receive regieter
+  output logic [7:0]  dout,		// parallel byte out
+
+  
+  // command register
   input  logic        start,
   input  logic        stop,
   input  logic        read,
   input  logic        write,
-  input  logic        ack_in,
-  input  logic [7:0]  din,
+  input  logic        ack_in,	// ACK, when a receiver, sent ACK (ACK = ‘0’) or NACK (ACK = ‘1’)
   
-  // status outputs
-  output logic        cmd_ack,
+  
+  // status register
+  output logic        cmd_ack,	// byte done
   output logic        ack_out,
   output logic        i2c_busy,
   output logic        i2c_arb_lost,
-  output logic [7:0]  dout,
+  
   
   // i2c signals
   input  logic        scl_i,
@@ -30,20 +42,20 @@ module i2c_master_byte_ctrl(
   output logic        sda_oen
 );
   
-  enum logic [2:0] {
-    IDLE  = 3'h0,
-    START = 3'h1,
-    READ  = 3'h2,
-    WRITE = 3'h3,
-    ACK   = 3'h4,
-    STOP  = 3'h5
+  enum bit [2:0] {
+    IDLE,
+    START,
+    READ,
+    WRITE,
+    ACK,
+    STOP
   } state;
   
   // signals for bit_controller
   logic [3:0] core_cmd;
-  logic       core_txd;
-  logic       core_ack;
-  logic       core_rxd;
+  logic       core_txd;		// serial_out
+  logic       core_rxd;		// serial_in
+  logic       core_ack;		// bit done
   
   // signals for shift register
   logic [7:0] shiftreg;
@@ -61,7 +73,7 @@ module i2c_master_byte_ctrl(
     .ena     (ena         );
     .clk_cnt (clk_cnt     );
     .cmd     (core_cmd    );
-    .cmd_ack (core_ack    );
+    .cmd_ack (core_ack    );	// bit done
     .busy    (i2c_busy    );
     .arb_lost(i2c_arb_lost);
     .din     (core_txd    );
@@ -79,22 +91,17 @@ module i2c_master_byte_ctrl(
   
   // generate shift register and generate counter
   always_ff @(posedge clk, negedge resetn) begin
-    if (!resetn) begin
-      shiftreg <= 8'h0;
-      dcnt     <= 3'h0;
-    end else if (load) begin
-      shiftreg <= din;
-      dcnt     <= 3'h7;
-    end else if (shift) begin
-      shiftreg <= {shiftreg[6:0], core_rxd};
-      dcnt     <= dcnt - 3'h1;
-    end
+    if (!resetn) 	begin   shiftreg <= 8'h0; 						 dcnt <= 3'h0; 		  end
+    else if (load) 	begin   shiftreg <= din; 						 dcnt <= 3'h7; 		  end
+    else if (shift) begin   shiftreg <= {shiftreg[6:0], core_rxd};   dcnt <= dcnt - 3'h1; end
   end
+  
+  assign cnt_done = (dcnt == 0);
   
   always_ff @(posedge clk, negedge resetn) begin
     if (!resetn || i2c_arb_lost) begin
       core_cmd <= `I2C_CMD_NOP;
-      core_txt <= 1'b0;
+      core_txd <= 1'b0;
       shift    <= 1'b0;
       load     <= 1'b0;
       cmd_ack  <= 1'b0;
@@ -102,7 +109,7 @@ module i2c_master_byte_ctrl(
       ack_out  <= 1'b0;
     end
     else begin
-      core_txt <= shift_reg[7];
+      core_txd <= shift_reg[7];
       shift    <= 1'b0;
       load     <= 1'b0;
       cmd_ack  <= 1'b0;
@@ -110,73 +117,42 @@ module i2c_master_byte_ctrl(
       case (state)
         IDLE:
           if(go) begin
-            if(start) begin
-              state    <= START;
-              core_cmd <= `I2C_CMD_START;
-            end else if (read) begin
-              state    <= READ;
-              core_cmd <= `I2C_CMD_READ;
-            end else if (write) begin
-              state    <= WRITE;
-              core_cmd <= `I2C_CMD_WRITE;
-            end else begin
-              state    <= STOP;
-              core_cmd <= `I2C_CMD_STOP;
-            end
+            if(start) 		begin   state <= START; 	core_cmd <= `I2C_CMD_START; end
+            else if (read) 	begin   state <= READ; 		core_cmd <= `I2C_CMD_READ; 	end
+            else if (write) begin   state <= WRITE; 	core_cmd <= `I2C_CMD_WRITE; end
+            else 			begin   state <= STOP; 		core_cmd <= `I2C_CMD_STOP; 	end
             load <= 1'b1;
           end
         
         START:
-          if (core_ack) begin
-            if (read) begin
-              state    <= READ;
-              core_cmd <= `I2C_CMD_READ;
-            end else begin
-              state    <= WRITE;
-              core_cmd <= `I2C_CMD_WRITE;
-            end
+          if (core_ack) begin	// bit done
+            if (read) 		begin   state <= READ; 		core_cmd <= `I2C_CMD_READ;  end
+            else 	  		begin   state <= WRITE;   	core_cmd <= `I2C_CMD_WRITE; end
             load <= 1'b1;
           end
         
         WRITE:
-          if (core_ack)
-            if (cnt_done) begin
-              state    <= ACK;
-              core_cmd <= `I2C_CMD_READ;
-            end else begin
-              state    <= WRITE;			// stay in same state
-              core_cmd <= `I2C_CMD_WRITE;	// write next bit
-              shift    <= 1'b1;
-            end
+          if (core_ack) begin	// bit done
+            if (cnt_done) 	begin   state <= ACK; 		core_cmd <= `I2C_CMD_READ; 	 end
+            else 		  	begin   state <= WRITE;   	core_cmd <= `I2C_CMD_WRITE;  end	// shift <= 1'b1;
+            shift <= 1'b1;
+          end
         
         READ:
           if (core_ack) begin
-            if (cnt_done) begin
-              state    <= ACK;
-              core_cmd <= `I2C_CMD_WRITE;
-            end else begin
-              state    <= READ;				// stay in same state
-              core_cmd <= `I2C_CMD_READ;	// write next bit
-            end
+            if (cnt_done) 	begin   state <= ACK; 		core_cmd <= `I2C_CMD_WRITE; end
+            else 		  	begin   state <= READ; 		core_cmd <= `I2C_CMD_READ;  end
             shift    <= 1'b1;
             core_txd <= ack_in;
           end
         
         ACK: begin
           if (core_ack) begin
-            if (stop) begin
-              state    <= STOP;
-              core_cmd <= `I2C_CMD_STOP;
-            end else begin
-              state    <= IDLE;
-              core_cmd <= `I2C_CMD_NOP;
-              
-              // generate command acknowledge signal
-              cmd_ack <= 1'b1;
-            end
+            if (stop) 		begin 	state <= STOP; 		core_cmd <= `I2C_CMD_STOP; 					 end
+            else 			begin 	state <= IDLE; 		core_cmd <= `I2C_CMD_NOP;   cmd_ack <= 1'b1; end	// byte done
             
             // assign ack_out output to bit_controller_rxd (contains last received bit)
-            ack_out  <= core_rxd;
+            ack_out  <= core_rxd;	// status_ack
             core_txd <= 1'b1;
           end
           else
@@ -184,13 +160,7 @@ module i2c_master_byte_ctrl(
         end
         
         STOP:
-          if (core_ack) begin
-            state    <= IDLE;
-            core_cmd <= `I2C_CMD_NOP;
-            
-            // generate command acknowledge signal
-            cmd_ack <= 1'b1;
-          end
+          if (core_ack) 	begin 	state <= IDLE; 		core_cmd <= `I2C_CMD_NOP;   cmd_ack <= 1'b1; end	// byte done
       endcase
     end
   end
