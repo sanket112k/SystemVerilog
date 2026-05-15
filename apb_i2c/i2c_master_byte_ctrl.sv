@@ -1,4 +1,5 @@
-
+`include "i2c_master_defines.svh"
+`include "i2c_master_bit_ctrl.sv"
 `timescale 1ns/10ps
 
 module i2c_master_byte_ctrl(
@@ -68,22 +69,22 @@ module i2c_master_byte_ctrl(
   logic       cnt_done;
   
   i2c_master_bit_ctrl bit_controller(
-    .clk     (clk         );
-    .resetn  (resetn      );
-    .ena     (ena         );
-    .clk_cnt (clk_cnt     );
-    .cmd     (core_cmd    );
-    .cmd_ack (core_ack    );	// bit done
-    .busy    (i2c_busy    );
-    .arb_lost(i2c_arb_lost);
-    .din     (core_txd    );
-    .dout    (core_rxd    );
-    .scl_i   (scl_i       );
-    .scl_o   (scl_o       );
-    .scl_oen (scl_oen     );
-    .sda_i   (sda_i       );
-    .sda_o   (sda_o       );
-    .sda_oen (sda_oen     );
+    .clk     (clk         ),
+    .resetn  (resetn      ),
+    .ena     (ena         ),
+    .clk_cnt (clk_cnt     ),
+    .cmd     (core_cmd    ),
+    .cmd_ack (core_ack    ),	// bit done
+    .busy    (i2c_busy    ),
+    .arb_lost(i2c_arb_lost),
+    .din     (core_txd    ),
+    .dout    (core_rxd    ),
+    .scl_i   (scl_i       ),
+    .scl_o   (scl_o       ),
+    .scl_oen (scl_oen     ),
+    .sda_i   (sda_i       ),
+    .sda_o   (sda_o       ),
+    .sda_oen (sda_oen     )
   );
   
   assign go = (read | write | stop) & ~cmd_ack;
@@ -109,7 +110,7 @@ module i2c_master_byte_ctrl(
       ack_out  <= 1'b0;
     end
     else begin
-      core_txd <= shift_reg[7];
+      core_txd <= shiftreg[7];
       shift    <= 1'b0;
       load     <= 1'b0;
       cmd_ack  <= 1'b0;
