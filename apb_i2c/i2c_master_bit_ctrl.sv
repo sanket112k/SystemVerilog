@@ -37,7 +37,7 @@
 // Tbuf        4.7us            1.3us   Bus free time between a stop and start condition
 ///////////////////////////////////////////////////////////////////////
 
-`include "i2c_master_defines.sv"
+`include "i2c_master_defines.svh"
 
 module i2c_master_bit_ctrl(
   input  logic        clk,
@@ -58,8 +58,8 @@ module i2c_master_bit_ctrl(
   output logic        scl_o,	
   output logic        scl_oen,	
   input  logic        sda_i,	
-  input  logic        sda_o,	
-  input  logic        sda_oen	 
+  output logic        sda_o,	
+  output logic        sda_oen	 
 );
   
   logic [1:0]  cSCL, cSDA;	// capture SCL and SDA
@@ -69,7 +69,7 @@ module i2c_master_bit_ctrl(
   
   logic        dscl_oen;	// delayed scl_oen
   logic        sda_chk;		// check SDA output (multi-master arbitration)
-  logic        clk_en		// clk generation signals
+  logic        clk_en;		// clk generation signals
   logic        slave_wait;	// slave inserts wait states
   logic [15:0] cnt;			// clk divider counter (synthesis)
   logic [13:0] filter_cnt;	// clk divider for filter
@@ -174,7 +174,7 @@ module i2c_master_bit_ctrl(
   logic start_condition;
   logic stop_condition;
   always_ff @(posedge clk or negedge resetn) begin
-    if (!reset) begin
+    if (!resetn) begin
       start_condition <= 1'b0;
       stop_condition  <= 1'b0;
     end else begin
