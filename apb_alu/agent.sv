@@ -3,20 +3,27 @@
 `include "monitor.sv"
 
 class agent;
-  
-  mailbox #(transaction) gen2drv;
-  mailbox #(transaction) mon2scb;
+  mailbox gen2drv;
+  mailbox mon2scb;
+  mailbox drv2scb;
+  mailbox drv2cov;
   
   generator gen;
-  driver drv;
-  monitor mon;
+  driver    drv;
+  monitor   mon;
   
-  function new(virtual fifo_if vif);
+  virtual apb_if.drv_mp vif_drv;
+  virtual apb_if.mon_mp vif_mon;
+  
+  function new(virtual apb_if.drv_mp vif_drv, virtual apb_if.mon_mp vif_mon);
+    this.vif_drv = vif_drv;
+    this.vif_mon = vif_mon;
     gen2drv = new();
     mon2scb = new();
-    
+    drv2scb = new();
+    drv2cov = new();
     gen = new(gen2drv);
-    drv = new(vif, gen2drv);
-    mon = new(vif, mon2scb);
+    drv = new(vif_drv, gen2drv, drv2scb, drv2cov);
+    mon = new(vif_mon, mon2scb);
   endfunction
 endclass
