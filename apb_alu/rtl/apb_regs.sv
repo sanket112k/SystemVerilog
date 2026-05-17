@@ -1,5 +1,3 @@
-`timescale 1ns/1ps
-
 module apb_regs #(
   parameter integer DW = 32
 )(
@@ -38,7 +36,7 @@ module apb_regs #(
 
   // Address map
   localparam [7:0] A_CTRL   = 8'h00;    // prdata = 32'h0;              // if (pwdata[0]) start_pulse <= 1'b1;
-localparam [7:0] A_STATUS = 8'h04;    // prdata = {29'h0, err_illegal_op, done, busy};
+  localparam [7:0] A_STATUS = 8'h04;    // prdata = {29'h0, err_illegal_op, done, busy};
                                         // if (pwdata[1]) done_clr_pulse <= 1'b1;
   localparam [7:0] A_OPA    = 8'h08;    // prdata = op_a;               // op_a   <= pwdata[DW-1:0];
   localparam [7:0] A_OPB    = 8'h0C;    // prdata = op_b;               // op_b   <= pwdata[DW-1:0];
