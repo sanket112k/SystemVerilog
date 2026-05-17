@@ -1,5 +1,7 @@
 `timescale 1ns/1ps
 `include "alu_pkg.vh"
+`include "alu_core.v"
+`include "apb_regs.v"
 
 module apb_alu_top #(
   parameter integer DW = 32
