@@ -1,4 +1,4 @@
-interface apb_alu_if(input logic pclk, input logic presetn);
+interface apb_if(input logic pclk, input logic presetn);
   import tb_pkg::*;
   
   logic 		 psel;
@@ -10,17 +10,17 @@ interface apb_alu_if(input logic pclk, input logic presetn);
   logic 		 pready;
   logic 		 pslverr;
   
-  clocking drv_cb @(posedge clk);
+  clocking drv_cb @(posedge pclk);
     default input #1step output #0;
     output psel, penable, pwrite, paddr, pwdata;
-    input prdata, pready, pslaverr;
+    input prdata, pready, pslverr;
   endclocking
   
-  clocking mon_cb @(posedge clk);
+  clocking mon_cb @(posedge pclk);
     default input #1step output #0;
-    input psel, penable, pwrite, paddr, pwdata, prdata, pready, pslaverr;
+    input psel, penable, pwrite, paddr, pwdata, prdata, pready, pslverr;
   endclocking
   
   modport drv_mp (clocking drv_cb, input pclk, presetn);
-  modport mom_mp (clocking mon_cb, input pclk, presetn);
+  modport mon_mp (clocking mon_cb, input pclk, presetn);
 endinterface
