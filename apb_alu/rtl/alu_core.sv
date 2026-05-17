@@ -1,6 +1,3 @@
-`timescale 1ns/1ps
-`include "alu_pkg.vh"
-
 module alu_core #(
   parameter integer DW = 32
 )(
