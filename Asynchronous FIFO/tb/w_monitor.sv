@@ -5,12 +5,12 @@ class w_monitor;
   mailbox #(w_transaction) wmon2scb;
   
   function new(virtual fifo_write_if wvif, mailbox #(w_transaction) wmon2scb);
-    this.wvif = wvif;
+    this.wvif     = wvif;
     this.wmon2scb = wmon2scb;
   endfunction
   
   task run();
-    @(wvif.w_mon_cb);
+    //@(wvif.w_mon_cb);
     forever begin
       wtr = new();
       
@@ -21,7 +21,8 @@ class w_monitor;
       wtr.wdata  = wvif.w_mon_cb.wdata;
       wtr.full   = wvif.w_mon_cb.full;
       
-      wmon2scb.put(wtr);
+      if (!wtr.wreset && wtr.wen)
+        wmon2scb.put(wtr.clone());
       wtr.display("WMON");
     end
   endtask
