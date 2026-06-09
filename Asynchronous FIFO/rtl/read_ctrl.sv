@@ -41,12 +41,13 @@ module read_ctrl #(
       empty <= (rgnext == wptr_sync);
   end:empty_flag
   
-  assign empty_next = (rgnext == wptr_sync);
+  //assign empty_next = (rgnext == wptr_sync);
   
   always_ff @(posedge rclk) begin:valid_generation
     if (rreset)
       rvalid <=0;
     else
-      rvalid <= ren & ~empty_next;
+      rvalid <= ren & ~empty;
+      //rvalid <= ren & ~empty_next;
   end:valid_generation
 endmodule
