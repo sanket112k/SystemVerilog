@@ -5,11 +5,10 @@ class r_generator;
   r_transaction rtr;
   mailbox #(r_transaction) rgen2drv;
   mailbox rcount_mb;
-  event gen_done;
   
-  function new(mailbox #(r_transaction) rgen2drv, ref event done);
+  function new(mailbox #(r_transaction) rgen2drv /*, ref event done*/);
     this.rgen2drv = rgen2drv;
-    this.gen_done = done;
+    //this.gen_done = done;
   endfunction
   
   
@@ -24,7 +23,7 @@ class r_generator;
       rtr.display("RGEN");
     end
     
-    repeat(DEPTH) begin 		// Don't read
+    repeat(DEPTH+30) begin 		// Don't read
       rtr = new();
       assert(rtr.randomize() with {
         rreset == 1'b0;
@@ -35,7 +34,7 @@ class r_generator;
       rtr.display("RGEN");
     end
     
-    repeat(DEPTH + 4) begin 		// read
+    repeat(DEPTH + 20) begin 		// read
       rtr = new();
       assert(rtr.randomize() with {
         rreset == 1'b0;
@@ -68,7 +67,7 @@ class r_generator;
       rtr.display("RGEN");
     end
        
-    -> gen_done;
+    //-> gen_done;
     //$display("[%0t] RGEN:        rcount=%0d", $time, rcount);
   endtask
   
