@@ -6,7 +6,7 @@ class r_agent;
   
   mailbox #(r_transaction) rgen2drv;
   mailbox #(r_transaction) rmon2scb;
-  mailbox rcount_mb;
+  //event done;
   
   r_generator rgen;
   r_driver    rdrv;
@@ -15,9 +15,8 @@ class r_agent;
   function new(virtual fifo_read_if rvif);
     rgen2drv = new();
     rmon2scb = new();
-    rcount_mb = new();
     
-    rgen = new(rgen2drv, rcount_mb);
+    rgen = new(rgen2drv /*, done*/);
     rdrv = new(rvif, rgen2drv);
     rmon = new(rvif, rmon2scb);
     
