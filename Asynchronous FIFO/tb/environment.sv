@@ -12,10 +12,7 @@ class environment;
   function new(virtual fifo_write_if wvif, virtual fifo_read_if rvif);
     wagt = new(wvif);
     ragt = new(rvif);
-    scb = new(wagt.wmon2scb,
-              ragt.rmon2scb, 
-              wagt.wcount_mb, 
-              ragt.rcount_mb);
+    scb  = new(wagt.wmon2scb, ragt.rmon2scb);
   endfunction
   
   task run();
@@ -25,7 +22,14 @@ class environment;
       scb.run();
     join_none
     
-    @(scb.done);
+    fork
+      @(scb.done);
+      begin
+        #1000;
+        $display("[ENV] TIMEOUT");
+      end
+    join_any
+    #20;
     scb.report();
     $finish;
   endtask
