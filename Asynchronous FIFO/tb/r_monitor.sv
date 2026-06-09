@@ -10,7 +10,7 @@ class r_monitor;
   endfunction
   
   task run();
-    @(rvif.r_mon_cb);
+    //@(rvif.r_mon_cb);
     forever begin
       rtr = new();
       
@@ -22,7 +22,8 @@ class r_monitor;
       rtr.empty   = rvif.r_mon_cb.empty;
       rtr.rvalid  = rvif.r_mon_cb.rvalid;
       
-      rmon2scb.put(rtr);
+      if (rtr.rvalid || rtr.rreset)
+        rmon2scb.put(rtr.clone());
       rtr.display("RMON");
     end
   endtask
